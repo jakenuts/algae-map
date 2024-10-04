@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import Papa from 'papaparse';
-import axios from 'axios';
+import './AlgaeBloomMap.css';
+import { fetchBloomData, BloomData } from './api/bloomService';
+import { getMarkerClass } from './utils/markerUtils';
 
 // Set default marker icon path to fix missing icon issue
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -13,52 +14,32 @@ L.Marker.prototype.options.icon = L.icon({
   shadowUrl: markerShadow,
 });
 
-interface BloomData {
-  Water_Body_Name: string;
-  Landmark: string;
-  County: string;
-  Advisory_Date: string;
-  Bloom_Latitude: string;
-  Bloom_Longitude: string;
-  Observation_Date: string;
-  Reported_Advisory_Types: string;
-}
-
 const AlgaeBloomMap: React.FC = () => {
   const [bloomData, setBloomData] = useState<BloomData[]>([]);
 
   useEffect(() => {
-    // Function to calculate the date difference in days
-    const daysDifference = (date1: Date, date2: Date) => {
-      const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-      return Math.ceil(timeDiff / (1000 * 3600 * 24));
-    };
-
-    // Load and parse the CSV data
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          'https://data.ca.gov/dataset/ab672540-aecd-42f1-9b05-9aad326f97ec/resource/c6a36b91-ad38-4611-8750-87ee99e497dd/download/bloom-report.csv'
-        );
-
-        Papa.parse<BloomData>(response.data, {
-          header: true,
-          complete: (results) => {
-            const today = new Date();
-            const filteredData = results.data.filter((row) => {
-              const advisoryDate = new Date(row.Advisory_Date);
-              return daysDifference(advisoryDate, today) <= 90;
-            });
-            setBloomData(filteredData);
-          },
-        });
+        const data = await fetchBloomData();
+        setBloomData(data);
       } catch (error) {
-        console.error('Error fetching the CSV data:', error);
+        console.error('Error fetching the bloom data:', error);
       }
     };
 
     fetchData();
   }, []);
+
+  // Customizing the default Leaflet icon with CSS styles for different advisory levels
+  const createCustomIcon = (advisoryType: string) => {
+    const iconClass = getMarkerClass(advisoryType);
+    return L.divIcon({
+      html: `<div class="leaflet-marker-icon ${iconClass}">⚠️</div>`, // Adding a symbol for easy visibility
+      className: 'custom-leaflet-div-icon', // Adding a new class to simplify CSS styling
+      iconSize: [30, 30], // Adjust the size to make it visible
+      iconAnchor: [15, 30], // Adjust anchor to make it appear at the correct position
+    });
+  };
 
   return (
     <MapContainer center={[37.5, -119.5]} zoom={6} style={{ height: '100vh', width: '100%' }}>
@@ -71,6 +52,7 @@ const AlgaeBloomMap: React.FC = () => {
           <Marker
             key={index}
             position={[parseFloat(bloom.Bloom_Latitude), parseFloat(bloom.Bloom_Longitude)]}
+            icon={createCustomIcon(bloom.Reported_Advisory_Types)}
           >
             <Popup>
               <b>Water Body:</b> {bloom.Water_Body_Name}<br />
