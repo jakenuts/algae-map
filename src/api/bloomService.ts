@@ -10,6 +10,10 @@ export interface BloomData {
   Bloom_Longitude: string;
   Observation_Date: string;
   Reported_Advisory_Types: string;
+  Case_Assignment: string;
+  Case_Status: string;
+  AdvisoryDetail: string;
+  Advisory_Detail_Description: string;
 }
 
 export const fetchBloomData = async (): Promise<BloomData[]> => {

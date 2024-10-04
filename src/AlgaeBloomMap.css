@@ -1,34 +1,31 @@
-
 .leaflet-marker-icon {
-    width: 30px;
-    height: 30px;
-    background-color: gray;
+    width: 25px;
+    height: 41px;
     border-radius: 50%;
-    border: 3px solid white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+    /*border: 3px solid white;*/
+  }
+  
+  .popup-container {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .popup-container h3 {
+    margin: 0;
+    font-size: 16px;
     font-weight: bold;
   }
   
-  .marker-danger {
-    background-color: red;
+  .popup-container p {
+    margin: 4px 0;
   }
   
-  .marker-caution {
-    background-color: orange;
-  }
-  
-  .marker-warning {
-    background-color: yellow;
-  }
-  
-  .marker-none {
-    background-color: green;
-  }
-  
-  .marker-other {
-    background-color: blue;
-  }
-  
+  .leaflet-tooltip {
+    background: white;
+    border-radius: 4px;
+    padding: 4px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    font-weight: bold;
+  }  
