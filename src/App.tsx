@@ -8,7 +8,7 @@ const App: React.FC = () => {
       <header className="App-header">
         <h1>Algae Bloom Map</h1>
       </header>
-      <main>
+      <main className="App-main">
         <AlgaeBloomMap />
       </main>
     </div>

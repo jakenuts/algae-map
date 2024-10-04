@@ -1,3 +1,14 @@
+.algae-bloom-map {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+}
+
 .leaflet-container {
   height: 100%;
   width: 100%;
@@ -33,4 +44,26 @@
   font-size: 12px;
   font-weight: bold;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.legal-disclaimer {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 1000;
+  text-align: center;
+}
+
+.legal-disclaimer a {
+  color: #0078A8;
+  text-decoration: none;
+}
+
+.legal-disclaimer a:hover {
+  text-decoration: underline;
 }
