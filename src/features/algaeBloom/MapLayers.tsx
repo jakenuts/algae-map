@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useMap, LayersControl, TileLayer } from 'react-leaflet';
 
 const MapLayers = () => {
