@@ -1,0 +1,36 @@
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-marker-icon {
+  width: 25px;
+  height: 41px;
+  border-radius: 50%;
+}
+
+.popup-container {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup-container h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.popup-container p {
+  margin: 4px 0;
+}
+
+.leaflet-tooltip {
+  background: white;
+  border-radius: 4px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}

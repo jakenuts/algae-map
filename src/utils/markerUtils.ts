@@ -4,29 +4,32 @@ import dangerMarker from '../assets/danger-marker.svg';
 import noneMarker from '../assets/none-marker.svg';
 import otherMarker from '../assets/other-marker.svg';
 import warningMarker from '../assets/warning-marker.svg';
-import { BloomData } from './api/bloomService';
+import { BloomData } from '../api/bloomService';
 
 export const getCustomIcon = (advisoryType: string, severity: string): L.Icon => {
   let iconUrl = otherMarker;
 
   if (advisoryType) {
-    if (advisoryType.toLowerCase().includes('danger')) {
+    const lowerAdvisoryType = advisoryType.toLowerCase();
+    if (lowerAdvisoryType.includes('danger')) {
       iconUrl = dangerMarker;
-    } else if (advisoryType.toLowerCase().includes('caution')) {
+    } else if (lowerAdvisoryType.includes('caution') || lowerAdvisoryType.includes('warning')) {
       iconUrl = warningMarker;
-    } else if (advisoryType.toLowerCase().includes('warning')) {
-      iconUrl = warningMarker;
-    } else if (advisoryType.toLowerCase().includes('none')) {
+    } else if (lowerAdvisoryType.includes('none')) {
       iconUrl = noneMarker;
     }
   } else {
     // Use severity to determine icon if advisory type is not reported
-    if (severity === 'high') {
-      iconUrl = dangerMarker;
-    } else if (severity === 'medium') {
-      iconUrl = warningMarker;
-    } else if (severity === 'low') {
-      iconUrl = noneMarker;
+    switch (severity) {
+      case 'high':
+        iconUrl = dangerMarker;
+        break;
+      case 'medium':
+        iconUrl = warningMarker;
+        break;
+      case 'low':
+        iconUrl = noneMarker;
+        break;
     }
   }
 

@@ -1,8 +1,31 @@
+.App {
+  text-align: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-/* Your card should also have full dimensions */
-.card {
-  height: 100%;
-  width: 100%;
-  max-width: 1280px; /* Optional, to prevent the card from becoming too wide */
-  box-sizing: border-box;
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+main {
+  flex-grow: 1;
+  position: relative;
+}
+
+/* Ensure the map container takes up the full height of the main element */
+main > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
