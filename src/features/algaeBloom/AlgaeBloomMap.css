@@ -15,9 +15,8 @@
 }
 
 .leaflet-marker-icon {
-  width: 25px;
-  height: 41px;
-  border-radius: 50%;
+  width: 40px !important;
+  height: 40px !important;
 }
 
 .popup-container {
