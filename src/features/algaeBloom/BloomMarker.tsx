@@ -30,11 +30,11 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
   const severity = determineSeverity(bloom);
 
   // Calculate icon size based on zoom level
-  const baseSize = 40;
+  const baseSize = 60; // Increased from 40 to 60
   const minZoom = 5;
   const maxZoom = 18;
   const sizeMultiplier = (zoom - minZoom) / (maxZoom - minZoom);
-  const iconSize = Math.max(baseSize * (0.5 + sizeMultiplier * 0.5), 20); // Minimum size of 20px
+  const iconSize = Math.max(baseSize * (0.5 + sizeMultiplier * 0.5), 30); // Minimum size increased from 20px to 30px
 
   const icon = getCustomIcon(bloom.Reported_Advisory_Types, severity, iconSize);
 

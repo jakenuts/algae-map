@@ -1,11 +1,11 @@
 import React from 'react';
-import { MapContainer, TileLayer, LayersControl } from 'react-leaflet';
+import { MapContainer} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useBloomData } from './useBloomData';
 import { BloomMarker } from './BloomMarker';
-import './AlgaeBloomMap.css';
+import  MapLayers  from './MapLayers';
 
-const { BaseLayer } = LayersControl;
+import './AlgaeBloomMap.css';
 
 const LegalDisclaimer: React.FC = () => (
   <div className="legal-disclaimer">
@@ -25,22 +25,8 @@ const AlgaeBloomMap: React.FC = () => {
 
   return (
     <div className="algae-bloom-map">
-      <MapContainer center={[37.5, -119.5]} zoom={6} className="map-container">
-        <LayersControl position="topright">
-          <BaseLayer checked name="Street View">
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-            />
-          </BaseLayer>
-          <BaseLayer name="Satellite View">
-            <TileLayer
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-            />
-          </BaseLayer>
-        </LayersControl>
-
+      <MapContainer key="map-container" center={[37.5, -119.5]} zoom={6} className="map-container">
+      <MapLayers />
         {bloomData.map((bloom, index) => (
           <BloomMarker key={index} bloom={bloom} />
         ))}
