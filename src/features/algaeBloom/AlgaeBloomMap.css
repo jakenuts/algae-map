@@ -14,11 +14,6 @@
   width: 100%;
 }
 
-.leaflet-marker-icon {
-  width: 40px !important;
-  height: 40px !important;
-}
-
 .popup-container {
   font-family: Arial, sans-serif;
   font-size: 14px;

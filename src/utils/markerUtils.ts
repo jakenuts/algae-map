@@ -6,7 +6,7 @@ import otherMarker from '../assets/other-marker.svg';
 import warningMarker from '../assets/warning-marker.svg';
 import { BloomData } from '../api/bloomService';
 
-export const getCustomIcon = (advisoryType: string, severity: string): L.Icon => {
+export const getCustomIcon = (advisoryType: string, severity: string, iconSize: number): L.Icon => {
   let iconUrl = otherMarker;
 
   if (advisoryType) {
@@ -35,8 +35,9 @@ export const getCustomIcon = (advisoryType: string, severity: string): L.Icon =>
 
   return L.icon({
     iconUrl,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40]
+    iconSize: [iconSize, iconSize],
+    iconAnchor: [iconSize / 2, iconSize],
+    popupAnchor: [0, -iconSize]
   });
 };
 
