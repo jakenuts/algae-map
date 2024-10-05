@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean":"rimraf dist && rimraf node_modules && rimraf package-lock.json",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
