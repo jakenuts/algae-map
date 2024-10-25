@@ -57,7 +57,7 @@ const Header: React.FC<{
     <header className="app-header">
       <div className="header-left">
         <img src={warningIcon} alt="" className="app-logo" />
-        <h1>Algae Bloom Map</h1>
+        <h1>NorCal Algae Bloom Map</h1>
       </div>
       <div className={`filters-container ${showFilters ? 'show' : ''}`}>
         <DateFilter
