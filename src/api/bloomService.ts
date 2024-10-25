@@ -34,15 +34,12 @@ const processBloomData = (csvData: string): Promise<BloomData[]> => {
         const today = new Date();
         const filteredData = results.data.filter((row) => {
           const advisoryDate = new Date(row.Advisory_Date);
-          const observationDate = new Date(row.Observation_Date);
-        
-          // Check if advisoryDate is valid and within 90 days
-          if (isValidDate(advisoryDate) && daysDifference(today, advisoryDate) > 90) return false;
-
-          // Check if observationDate is valid and within 90 days
-          if (isValidDate(observationDate) && daysDifference(today, observationDate) > 90) return false;        
-    
-          return true;
+          const observationDate = new Date(row.Observation_Date);        
+          const hasRecentUpdate = 
+                (isValidDate(advisoryDate) && daysDifference(today, advisoryDate) <= 90)              
+             || (isValidDate(observationDate) && daysDifference(today, observationDate) < 90);
+      
+          return hasRecentUpdate;
         });
         resolve(filteredData);
       },
