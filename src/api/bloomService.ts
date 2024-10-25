@@ -14,6 +14,7 @@ export interface BloomData {
   Case_Status: string;
   AdvisoryDetail: string;
   Advisory_Detail_Description: string;
+  Advisory_Recommended: string;
 }
 
 // Function to calculate the date difference in days
