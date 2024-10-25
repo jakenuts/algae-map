@@ -32,10 +32,10 @@ const DateFilter: React.FC<{
       displayEmpty
       className="date-select"
     >
-      <MenuItem value={14}>14d {label}</MenuItem>
-      <MenuItem value={30}>30d {label}</MenuItem>
-      <MenuItem value={60}>60d {label}</MenuItem>
-      <MenuItem value={90}>90d {label}</MenuItem>
+      <MenuItem value={14}>{label} 14d</MenuItem>
+      <MenuItem value={30}>{label} 30d </MenuItem>
+      <MenuItem value={60}>{label} 60d</MenuItem>
+      <MenuItem value={90}>{label} 90d</MenuItem>
     </Select>
   </FormControl>
 );

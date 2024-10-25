@@ -27,7 +27,7 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
   if (!bloom.Bloom_Latitude || !bloom.Bloom_Longitude) return null;
 
   const position: [number, number] = [parseFloat(bloom.Bloom_Latitude), parseFloat(bloom.Bloom_Longitude)];
-  const severity = determineSeverity(bloom);
+  const { severity, score } = determineSeverity(bloom);
 
   // Calculate icon size based on zoom level
   const baseSize = 60; // Increased from 40 to 60
@@ -47,7 +47,7 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
         icon={icon}
       >
         <Tooltip direction="top" offset={[0, -iconSize / 2]} opacity={1}>
-          <span>{bloom.Water_Body_Name} - {severity.toUpperCase()} Severity</span>
+          <span>{bloom.Water_Body_Name} - {severity.toUpperCase()} Severity (Score: {score})</span>
         </Tooltip>
         <Popup>
           <div className="popup-container">
@@ -61,6 +61,7 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
             <p><b>Case Status:</b> {bloom.Case_Status}</p>
             <p><b>Advisory Detail:</b> {bloom.AdvisoryDetail}</p>
             <p><b>Advisory Description:</b> {bloom.Advisory_Detail_Description}</p>
+            <p><b>Estimated Severity (not official):</b> {severity.toUpperCase()} (Score: {score}/10)</p>
           </div>
         </Popup>
       </Marker>

@@ -114,23 +114,27 @@ const calculateSeverityScore = (bloom: BloomData): number => {
 
   // Severity increasing factors
   if (combinedText.includes('illness')) score += 2;
-  if (combinedText.includes('toxi')) score += 2;
-  if (combinedText.includes('detected')) score += 3;
-  if (combinedText.includes('harmful')) score += 2;
+  if (combinedText.includes('toxic')) score += 2;
+  if (combinedText.includes('detected cyanotoxins')) score += 3;
+
   // Severity decreasing factors
-  if (combinedText.includes('no bloom')) score -= 2;
-  if (combinedText.includes('no detected')) score -= 3;
-  if (combinedText.includes('no harmful')) score -= 3;
-  if (combinedText.includes('no cyano')) score -= 3;
-  if (combinedText.includes('no toxi')) score -= 3;
-  if (combinedText.includes('below posting triggers')) score -= 2;
-  if (combinedText.includes('subsided')) score -= 3;
+  if (combinedText.includes('no harmful')) score -= 2;
+  if (combinedText.includes('no cyano')) score -= 2;
+  if (combinedText.includes('below posting triggers')) score -= 1;
 
   // Ensure score stays within bounds
   return Math.min(Math.max(score, 0), 10);
 };
 
-export const determineSeverity = (bloom: BloomData): string => {
+export interface SeverityResult {
+  severity: string;
+  score: number;
+}
+
+export const determineSeverity = (bloom: BloomData): SeverityResult => {
   const score = calculateSeverityScore(bloom);
-  return scoreToSeverity(score);
+  return {
+    severity: scoreToSeverity(score),
+    score: score
+  };
 };
