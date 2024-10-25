@@ -6,6 +6,10 @@ export type DateFilterOption = 14 | 30 | 60 | 90;
 const filterDataByDays = (data: BloomData[], days: DateFilterOption, dateField: 'Advisory_Date' | 'Observation_Date'): BloomData[] => {
   const today = new Date();
   return data.filter(item => {
+    
+    // If the field is empty, don't filter it out
+    if (!item[dateField]) return true;
+
     const date = new Date(item[dateField]);
     const timeDiff = Math.abs(today.getTime() - date.getTime());
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
