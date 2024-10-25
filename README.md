@@ -23,6 +23,17 @@ The Algae Bloom Map application:
 
 The data used in this application comes from the California Harmful Algal Blooms (HABs) Portal. While we strive to provide accurate and up-to-date information, users should note that this application is for informational purposes only.
 
+## Development
+
+### Local Data Mode
+
+During development, you can use a local cached version of the bloom data instead of fetching from the API. To enable this:
+
+1. Set `VITE_USE_LOCAL_BLOOM_DATA=true` in your `.env.development` file
+2. Ensure you have the latest bloom data in `docs/bloom-report.csv`
+
+This feature is particularly useful for offline development or when you want to work with a stable dataset.
+
 ## Legal Disclaimer
 
 This map is for informational purposes only. For the most up-to-date and official information, please visit the [California Harmful Algal Blooms Portal](https://www.mywaterquality.ca.gov/habs/where/freshwater_events.html).
