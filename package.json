@@ -4,19 +4,24 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "clean":"rimraf dist && rimraf node_modules && rimraf package-lock.json",
+    "clean": "rimraf dist && rimraf node_modules && rimraf package-lock.json",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "dependencies": {  
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.5",
+    "@mui/material": "^6.1.5",
     "axios": "^1.7.7",
     "leaflet": "^1.9.4",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-leaflet": "^4.2.1"
+    "react-leaflet": "^4.2.1",
+    "react-spinners": "^0.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",

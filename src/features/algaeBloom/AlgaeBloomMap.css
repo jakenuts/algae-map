@@ -1,63 +1,201 @@
 .algae-bloom-map {
   position: relative;
-  height: 100%;
+  height: 100vh;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05),
+              0 2px 4px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  z-index: 1001;
+  height: 52px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo {
+  height: 20px;
+  width: 20px;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: saturate(0.9);
+}
+
+.app-header h1 {
+  font-size: 1.05rem;
+  margin: 0;
+  color: #1a2b3c;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
 }
 
 .map-container {
-  height: 100%;
-  width: 100%;
-}
-
-.leaflet-container {
-  height: 100%;
-  width: 100%;
-}
-
-.popup-container {
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.popup-container h3 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.popup-container p {
-  margin: 4px 0;
-}
-
-.leaflet-tooltip {
-  background: white;
-  border-radius: 4px;
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  font-size: 12px;
-  font-weight: bold;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .legal-disclaimer {
   position: absolute;
   bottom: 10px;
-  left: 10px;
-  right: 10px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 5px 10px;
-  font-size: 12px;
-  border-radius: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.98);
+  padding: 8px 16px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
   z-index: 1000;
-  text-align: center;
+  backdrop-filter: blur(5px);
+  max-width: 90%;
 }
 
 .legal-disclaimer a {
-  color: #0078A8;
+  color: #2196f3;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .legal-disclaimer a:hover {
   text-decoration: underline;
+}
+
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  z-index: 2000;
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.filters-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-right: -4px;
+}
+
+.date-filter {
+  min-width: 110px !important;
+}
+
+.date-select {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  font-size: 0.9rem !important;
+  transition: background-color 0.2s ease;
+}
+
+.date-select:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.date-select .MuiSelect-select {
+  padding: 6px 28px 6px 10px !important;
+  color: #1a2b3c !important;
+  font-weight: 450;
+}
+
+.filter-toggle {
+  display: none !important;
+  margin-left: 4px !important;
+  padding: 6px !important;
+  color: #1a2b3c !important;
+}
+
+/* Material-UI Select overrides */
+.MuiOutlinedInput-notchedOutline {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 12px;
+    height: 48px;
+  }
+
+  .app-header h1 {
+    font-size: 1rem;
+  }
+
+  .app-logo {
+    height: 18px;
+    width: 18px;
+  }
+
+  .filter-toggle {
+    display: flex !important;
+  }
+
+  .filters-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .filters-container.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .date-filter {
+    min-width: 105px !important;
+  }
+
+  .legal-disclaimer {
+    bottom: 20px;
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 8px 12px;
+  }
 }
