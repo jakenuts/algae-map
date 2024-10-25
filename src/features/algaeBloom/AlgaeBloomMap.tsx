@@ -48,11 +48,9 @@ const LoadingScreen: React.FC = () => (
 );
 
 const Header: React.FC<{
-  observationDays: DateFilterOption;
-  setObservationDays: (days: DateFilterOption) => void;
-  advisoryDays: DateFilterOption;
-  setAdvisoryDays: (days: DateFilterOption) => void;
-}> = ({ observationDays, setObservationDays, advisoryDays, setAdvisoryDays }) => {
+  updatedDays: DateFilterOption;
+  setUpdatedDays: (days: DateFilterOption) => void;
+}> = ({ updatedDays, setUpdatedDays }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   return (
@@ -63,14 +61,9 @@ const Header: React.FC<{
       </div>
       <div className={`filters-container ${showFilters ? 'show' : ''}`}>
         <DateFilter
-          value={observationDays}
-          onChange={setObservationDays}
-          label="Observation"
-        />
-        <DateFilter
-          value={advisoryDays}
-          onChange={setAdvisoryDays}
-          label="Advisory"
+          value={updatedDays}
+          onChange={setUpdatedDays}
+          label="Updated"
         />
       </div>
       <Tooltip title="Toggle Filters" placement="left">
@@ -91,10 +84,8 @@ const AlgaeBloomMap: React.FC = () => {
     bloomData,
     isLoading,
     error,
-    advisoryDays,
-    setAdvisoryDays,
-    observationDays,
-    setObservationDays
+    updatedDays,
+    setUpdatedDays
   } = useBloomData();
 
   if (isLoading) return <LoadingScreen />;
@@ -103,10 +94,8 @@ const AlgaeBloomMap: React.FC = () => {
   return (
     <div className="algae-bloom-map">
       <Header
-        observationDays={observationDays}
-        setObservationDays={setObservationDays}
-        advisoryDays={advisoryDays}
-        setAdvisoryDays={setAdvisoryDays}
+        updatedDays={updatedDays}
+        setUpdatedDays={setUpdatedDays}
       />
       <div className="map-wrapper">
         <MapContainer center={[37.5, -119.5]} zoom={6} className="map-container">

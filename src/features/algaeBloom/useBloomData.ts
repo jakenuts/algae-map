@@ -3,15 +3,33 @@ import { fetchBloomData, BloomData } from '../../api/bloomService';
 
 export type DateFilterOption = 14 | 30 | 60 | 90;
 
-const filterDataByDays = (data: BloomData[], days: DateFilterOption, dateField: 'Advisory_Date' | 'Observation_Date'): BloomData[] => {
-  const today = new Date();
+const isValidDate = (dateStr: string): boolean => {
+  const date = new Date(dateStr);
+  return date instanceof Date && !isNaN(date.getTime());
+};
 
-  if (dateField === 'Observation_Date') 
-    return data;
+const getMostRecentDate = (item: BloomData): Date | null => {
+  const advisoryDate = new Date(item.Advisory_Date);
+  const observationDate = new Date(item.Observation_Date);
   
-  return data.filter(item => {  
-    const date = new Date(item[dateField]);
-    const timeDiff = Math.abs(today.getTime() - date.getTime());
+  const validAdvisory = isValidDate(item.Advisory_Date);
+  const validObservation = isValidDate(item.Observation_Date);
+
+  if (!validAdvisory && !validObservation) return null;
+  if (!validAdvisory) return observationDate;
+  if (!validObservation) return advisoryDate;
+  
+  return advisoryDate > observationDate ? advisoryDate : observationDate;
+};
+
+const filterDataByDays = (data: BloomData[], days: DateFilterOption): BloomData[] => {
+  const today = new Date();
+  
+  return data.filter(item => {
+    const mostRecentDate = getMostRecentDate(item);
+    if (!mostRecentDate) return true; // Include items with no valid dates
+    
+    const timeDiff = Math.abs(today.getTime() - mostRecentDate.getTime());
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     return daysDiff <= days;
   });
@@ -22,8 +40,7 @@ export const useBloomData = () => {
   const [filteredData, setFilteredData] = useState<BloomData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [advisoryDays, setAdvisoryDays] = useState<DateFilterOption>(30);
-  const [observationDays, setObservationDays] = useState<DateFilterOption>(30);
+  const [updatedDays, setUpdatedDays] = useState<DateFilterOption>(30);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,19 +60,16 @@ export const useBloomData = () => {
 
   useEffect(() => {
     if (bloomData.length > 0) {
-      let filtered = filterDataByDays(bloomData, advisoryDays, 'Advisory_Date');
-      filtered = filterDataByDays(filtered, observationDays, 'Observation_Date');
+      const filtered = filterDataByDays(bloomData, updatedDays);
       setFilteredData(filtered);
     }
-  }, [bloomData, advisoryDays, observationDays]);
+  }, [bloomData, updatedDays]);
 
   return {
     bloomData: filteredData,
     isLoading,
     error,
-    advisoryDays,
-    setAdvisoryDays,
-    observationDays,
-    setObservationDays
+    updatedDays,
+    setUpdatedDays
   };
 };

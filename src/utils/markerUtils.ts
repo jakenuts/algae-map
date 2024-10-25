@@ -55,6 +55,7 @@ export const determineSeverity = (bloom: BloomData): string => {
       return 'high';
     } else if (lowerAdvisoryDetail.includes('no harmful') ||
                lowerAdvisoryDetail.includes('no cyano') ||
+               lowerAdvisoryDetail.includes('below posting triggers') ||
                lowerAdvisoryDescription.includes('no harmful') ||
                lowerAdvisoryDescription.includes('no cyano')) {
       return 'low';
