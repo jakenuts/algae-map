@@ -58,7 +58,7 @@ export const fetchBloomData = async (): Promise<BloomData[]> => {
     response = await axios.get('/docs/bloom-report.csv');
   } else {
     response = await axios.get(
-      'https://data.ca.gov/dataset/ab672540-aecd-42f1-9b05-9aad326f97ec/resource/c6a36b91-ad38-4611-8750-87ee99e497dd/download/bloom-report_2025-07-01.csv'
+      'https://data.ca.gov/dataset/ab672540-aecd-42f1-9b05-9aad326f97ec/resource/c6a36b91-ad38-4611-8750-87ee99e497dd/download/bloom-report_2025-07-11.csv'
     );
   }
 
