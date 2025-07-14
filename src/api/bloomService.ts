@@ -57,10 +57,35 @@ export const fetchBloomData = async (): Promise<BloomData[]> => {
   if (useLocalData) {
     response = await axios.get('/docs/bloom-report.csv');
   } else {
-    response = await axios.get(
-      'https://data.ca.gov/dataset/ab672540-aecd-42f1-9b05-9aad326f97ec/resource/c6a36b91-ad38-4611-8750-87ee99e497dd/download/bloom-report_2025-07-11.csv'
-    );
+    // Try to fetch with the current date first, then fallback to previous dates
+    const baseUrl = 'https://data.ca.gov/dataset/ab672540-aecd-42f1-9b05-9aad326f97ec/resource/c6a36b91-ad38-4611-8750-87ee99e497dd/download/bloom-report';
+    const today = new Date();
+    
+    // Try current date and up to 14 days back
+    for (let daysBack = 0; daysBack <= 14; daysBack++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - daysBack);
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const url = `${baseUrl}_${dateStr}.csv`;
+      
+      try {
+        response = await axios.get(url);
+        console.log(`Successfully fetched bloom data from: ${url}`);
+        break;
+      } catch (error) {
+        if (daysBack === 14) {
+          // If we've tried all dates, try without date suffix as last resort
+          try {
+            response = await axios.get(`${baseUrl}.csv`);
+            console.log('Fetched bloom data without date suffix');
+          } catch (fallbackError) {
+            throw new Error('Unable to fetch bloom data from any known URL pattern');
+          }
+        }
+        // Continue to next date
+      }
+    }
   }
 
-  return processBloomData(response.data);
+  return processBloomData(response!.data);
 };
