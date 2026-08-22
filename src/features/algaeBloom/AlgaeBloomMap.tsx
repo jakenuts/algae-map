@@ -303,7 +303,7 @@ const AlgaeBloomMap: React.FC = () => {
         <span className="summary-source">Updated {formatTimestamp(fetchedAt)}</span>
       </div>
       <details className="mobile-safety-strip">
-        <summary><strong>Before your dog goes in:</strong><span>no advisory doesn’t mean the water is safe.</span><em>More</em></summary>
+        <summary><strong>Before your dog goes in:</strong><span>no advisory doesn’t mean safe water.</span><em>More</em></summary>
         <div>
           <p>Check posted signs and the water itself. Keep dogs out around scum, mats, foam, paint-like color, or a reported spike.</p>
           <a href={OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">California official HAB map</a>
