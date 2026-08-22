@@ -34,6 +34,10 @@ export interface LocalMonitoringStation {
   value: number;
   unit: string;
   observedAt: string | null;
+  isCurrent?: boolean;
+  recentPeak?: number | null;
+  recentPeakAt?: string | null;
+  hasRecentSpike?: boolean;
   sourceUrl: string;
 }
 
