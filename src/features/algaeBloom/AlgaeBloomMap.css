@@ -129,7 +129,7 @@
 .sheet-close { position: absolute; top: 7px; right: 9px; width: 27px; height: 27px; padding: 0; border: 0; border-radius: 50%; background: #e7f0f2; color: #173f50; font-size: 1.25rem; line-height: 1; cursor: pointer; }
 .sheet-close:hover, .sheet-close:focus-visible { background: #cfe2e5; outline: none; }
 .dog-safety-note { margin: 9px 0 7px; padding: 7px 8px; border: 1px solid #f0d19a; border-radius: 6px; background: #fff6db; color: #553b08; line-height: 1.35; }
-.details-toggle { padding: 0; border: 0; background: transparent; color: var(--water-dark); font: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.details-toggle { margin-right: 10px; padding: 0; border: 0; background: transparent; color: var(--water-dark); font: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .assessment-detail { margin: 7px 0 0; color: #294c56; line-height: 1.35; }
 .assessment-sheet a { display: inline-block; margin-top: 8px; color: var(--water-dark); font-weight: 750; text-underline-offset: 3px; }
 
