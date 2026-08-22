@@ -139,6 +139,8 @@
 .view-report-card > div { padding: 0 9px 9px; }
 .view-report-card p, .drawer-note { margin: 0; color: #426871; font-size: 0.74rem; line-height: 1.35; }
 .view-report-card button { margin-top: 7px; padding: 0; border: 0; background: transparent; color: var(--water-dark); font: inherit; font-size: 0.76rem; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.view-report-card a { display: inline-block; margin: 7px 0 0 10px; color: var(--water-dark); font-size: 0.76rem; font-weight: 750; text-underline-offset: 3px; }
+.view-report-card--monitoring { border-color: #c5dfe5; }
 .map-toast { position: absolute; z-index: 1000; top: 12px; left: 50%; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 7px 10px; transform: translateX(-50%); border-radius: 8px; background: #fff9e4; box-shadow: 0 5px 14px rgba(16, 42, 53, 0.18); color: #6e4b04; font-size: 0.8rem; }
 .assessment-sheet { position: absolute; z-index: 1000; right: 14px; bottom: 18px; left: 14px; max-width: 490px; margin: 0 auto; padding: 12px 42px 12px 13px; border: 1px solid #bdd7e8; border-radius: 14px; background: rgba(255, 255, 255, 0.97); box-shadow: 0 10px 26px rgba(16, 42, 53, 0.25); color: #173f50; font-size: 0.8rem; }
 .assessment-heading { display: flex; align-items: flex-start; gap: 8px; }
@@ -166,23 +168,7 @@
 .advisory-marker--alert, .advisory-marker--awareness, .legend-dot--alert, .popup-status--alert, .popup-status--awareness { background: #6951a8; }
 .advisory-marker--reported, .legend-dot--reported, .popup-status--reported { background: #247389; }
 .local-monitoring-marker-shell { background: transparent; border: 0; }
-.local-monitoring-marker {
-  display: grid;
-  width: 82px;
-  padding: 3px 5px 4px;
-  border: 2px solid #fff;
-  border-radius: 7px;
-  background: #036f82;
-  box-shadow: 0 2px 8px rgba(16, 42, 53, 0.42);
-  color: #fff;
-  font-family: system-ui, sans-serif;
-  line-height: 1.05;
-  text-align: center;
-}
-.local-monitoring-marker b { font-size: 0.62rem; letter-spacing: 0.06em; }
-.local-monitoring-marker small { font-size: 0.58rem; font-weight: 750; white-space: nowrap; }
-.local-monitoring-marker--stale { background: #637b83; }
-.local-monitoring-marker--spike { background: #b55409; }
+.local-monitoring-dot { box-sizing: border-box; }
 .monitoring-spike-note { padding: 7px 8px; border: 1px solid #e7c184; border-radius: 6px; background: #fff4df; color: #70410a; font-size: 0.8rem; }
 .mobile-bottom-toolbar, .mobile-search-panel, .mobile-tools-panel, .mobile-safety-strip { display: none; }
 

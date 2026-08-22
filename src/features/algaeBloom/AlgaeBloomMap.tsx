@@ -37,23 +37,15 @@ const loadSavedMapView = (): MapView => {
 };
 
 const liveMonitorIcon = (station: LocalMonitoringStation) => {
-  const reading = station.hasRecentSpike && station.recentPeak != null
-    ? `BGA spike ${station.recentPeak.toFixed(2)}`
-    : station.isCurrent && station.recentPeak != null
-    ? `24h high ${station.recentPeak.toFixed(2)}`
-    : station.isCurrent
-      ? `Latest ${station.value.toFixed(2)}`
-      : 'Stale reading';
-
   return divIcon({
     className: 'local-monitoring-marker-shell',
-    html: `<span class="local-monitoring-marker${station.isCurrent ? '' : ' local-monitoring-marker--stale'}${station.hasRecentSpike ? ' local-monitoring-marker--spike' : ''}"><b>HOOPA</b><small>${reading} µg/L</small></span>`,
-    iconSize: [82, 34],
-    iconAnchor: [41, 17],
+    html: `<span class="advisory-marker advisory-marker--${station.hasRecentSpike ? 'warning' : 'reported'} local-monitoring-dot" aria-label="${station.hasRecentSpike ? 'Recent blue-green algae spike' : 'Current Hoopa monitoring signal'}"></span>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 };
 
-const ViewportController: React.FC<{ selectedBloom: BloomData | null; userLocation: [number, number] | null }> = ({ selectedBloom, userLocation }) => {
+const ViewportController: React.FC<{ selectedBloom: BloomData | null; userLocation: [number, number] | null; focusedLocation: [number, number] | null }> = ({ selectedBloom, userLocation, focusedLocation }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -66,6 +58,10 @@ const ViewportController: React.FC<{ selectedBloom: BloomData | null; userLocati
   useEffect(() => {
     if (userLocation) map.flyTo(userLocation, 11, { duration: 0.7 });
   }, [map, userLocation]);
+
+  useEffect(() => {
+    if (focusedLocation) map.flyTo(focusedLocation, 13, { duration: 0.7 });
+  }, [focusedLocation, map]);
 
   return null;
 };
@@ -110,6 +106,7 @@ const AlgaeBloomMap: React.FC = () => {
   const [advisoriesOnly, setAdvisoriesOnly] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [focusedLocation, setFocusedLocation] = useState<[number, number] | null>(null);
   const [showTools, setShowTools] = useState(false);
   const [showAssessmentDetails, setShowAssessmentDetails] = useState(false);
   const [isListOpen, setIsListOpen] = useState(false);
@@ -132,6 +129,7 @@ const AlgaeBloomMap: React.FC = () => {
     [matchingBloomData, selectedId],
   );
   const advisoryCount = matchingBloomData.filter((bloom) => getAdvisoryStatus(bloom).isAdvisory).length;
+  const currentMonitoringSignals = useMemo(() => localMonitoring.filter((station) => station.isCurrent), [localMonitoring]);
   const visibleBloomData = useMemo(() => matchingBloomData
     .filter((bloom) => {
       if (!visibleBounds) return true;
@@ -142,12 +140,27 @@ const AlgaeBloomMap: React.FC = () => {
         && longitude >= visibleBounds.west && longitude <= visibleBounds.east;
     })
     .sort((left, right) => Number(getAdvisoryStatus(right).isAdvisory) - Number(getAdvisoryStatus(left).isAdvisory)), [matchingBloomData, visibleBounds]);
+  const visibleMonitoringSignals = useMemo(() => currentMonitoringSignals.filter((station) => {
+    if (!visibleBounds) return true;
+    return station.latitude >= visibleBounds.south && station.latitude <= visibleBounds.north
+      && station.longitude >= visibleBounds.west && station.longitude <= visibleBounds.east;
+  }), [currentMonitoringSignals, visibleBounds]);
+  const visibleSignalCount = visibleBloomData.length + visibleMonitoringSignals.length;
   const assessmentDetail = selectedBloom?.Reported_Management_Organizations
     || selectedBloom?.AdvisoryDetail
     || selectedBloom?.Advisory_Detail_Description;
 
   const selectBloom = (bloom: BloomData) => {
     setSelectedId(recordId(bloom));
+    setFocusedLocation(null);
+    setShowAssessmentDetails(false);
+    setShowTools(false);
+    setIsListOpen(false);
+  };
+
+  const focusMonitoringSignal = (station: LocalMonitoringStation) => {
+    setFocusedLocation([station.latitude, station.longitude]);
+    setSelectedId(null);
     setShowAssessmentDetails(false);
     setShowTools(false);
     setIsListOpen(false);
@@ -301,11 +314,11 @@ const AlgaeBloomMap: React.FC = () => {
         <MapContainer center={[initialMapView.latitude, initialMapView.longitude]} zoom={initialMapView.zoom} className="map-container" zoomControl={false}>
           <MapLayers />
           <ZoomControl position="bottomright" />
-          <ViewportController selectedBloom={selectedBloom} userLocation={userLocation} />
+          <ViewportController selectedBloom={selectedBloom} userLocation={userLocation} focusedLocation={focusedLocation} />
           <MapViewTracker onBoundsChange={setVisibleBounds} />
           {userLocation && <CircleMarker center={userLocation} radius={8} pathOptions={{ color: '#083e50', fillColor: '#38bdf8', fillOpacity: 1, weight: 3 }} />}
           {matchingBloomData.map((bloom) => <BloomMarker key={recordId(bloom)} bloom={bloom} onSelect={selectBloom} />)}
-          {localMonitoring.map((station) => (
+          {localMonitoring.filter((station) => station.isCurrent).map((station) => (
             <Marker
               key={station.id}
               position={[station.latitude, station.longitude]}
@@ -331,7 +344,7 @@ const AlgaeBloomMap: React.FC = () => {
           ))}
         </MapContainer>
         <button type="button" className="in-view-toggle" onClick={toggleMobileReports} aria-expanded={isListOpen} aria-controls="reports-in-view">
-          <span>Reports in this view</span><strong>{visibleBloomData.length}</strong>
+          <span>Signals in this view</span><strong>{visibleSignalCount}</strong>
         </button>
         {isSearchOpen && (
           <div className="mobile-search-panel">
@@ -382,10 +395,24 @@ const AlgaeBloomMap: React.FC = () => {
         {isListOpen && (
           <section id="reports-in-view" className="reports-drawer" aria-label="Reports in the visible map area">
             <header>
-              <div><strong>Reports in this view</strong><span>{visibleBloomData.length} recent {visibleBloomData.length === 1 ? 'report' : 'reports'}</span></div>
+              <div><strong>Signals in this view</strong><span>{visibleSignalCount} report{visibleSignalCount === 1 ? '' : 's'} or monitoring signals</span></div>
               <button type="button" onClick={() => setIsListOpen(false)} aria-label="Close reports list">×</button>
             </header>
             <div className="reports-drawer-list">
+              {visibleMonitoringSignals.map((station) => (
+                <details key={station.id} className="view-report-card view-report-card--monitoring">
+                  <summary>
+                    <span className={`selected-status selected-status--${station.hasRecentSpike ? 'warning' : 'reported'}`}>{station.hasRecentSpike ? 'Recent BGA spike' : 'Live monitoring signal'}</span>
+                    <strong>{station.name}</strong>
+                    <small>Latest {station.value.toFixed(2)} {station.unit}{station.recentPeak != null ? ` · 24h high ${station.recentPeak.toFixed(2)}` : ''}</small>
+                  </summary>
+                  <div>
+                    <p>Raw Hoopa Tribal EPA instrument signal, not a toxin result or official advisory.</p>
+                    <button type="button" onClick={() => focusMonitoringSignal(station)}>View station</button>
+                    <a href={station.sourceUrl} target="_blank" rel="noopener noreferrer">Source</a>
+                  </div>
+                </details>
+              ))}
               {visibleBloomData.slice(0, 20).map((bloom) => {
                 const advisory = getAdvisoryStatus(bloom);
                 return (
@@ -403,7 +430,7 @@ const AlgaeBloomMap: React.FC = () => {
                 );
               })}
               {visibleBloomData.length > 20 && <p className="drawer-note">Showing the first 20 reports. Zoom in or filter to narrow the list.</p>}
-              {!visibleBloomData.length && <p className="drawer-note">No recent reports are in this map area. This is not a safety clearance.</p>}
+              {!visibleSignalCount && <p className="drawer-note">No recent reports or live monitoring signals are in this map area. This is not a safety clearance.</p>}
             </div>
           </section>
         )}
