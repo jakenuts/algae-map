@@ -11,6 +11,7 @@ export interface BloomData {
   Bloom_Longitude?: string | number | null;
   Observation_Date?: string | null;
   Reported_Advisory_Types?: string | null;
+  Reported_Management_Organizations?: string | null;
   Case_Assignment?: string | null;
   Case_Status?: string | null;
   AdvisoryDetail?: string | null;

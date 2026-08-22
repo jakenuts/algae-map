@@ -41,6 +41,7 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
           </dl>
           {bloom.AdvisoryDetail && <p className="popup-detail">{bloom.AdvisoryDetail}</p>}
           {bloom.Advisory_Detail_Description && <p className="popup-detail">{bloom.Advisory_Detail_Description}</p>}
+          {bloom.Reported_Management_Organizations && <p className="popup-detail"><strong>Monitoring note:</strong> {bloom.Reported_Management_Organizations}</p>}
         </article>
       </Popup>
     </Marker>

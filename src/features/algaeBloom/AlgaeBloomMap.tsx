@@ -46,6 +46,7 @@ const AlgaeBloomMap: React.FC = () => {
   const { bloomData, isLoading, error, updatedDays, setUpdatedDays, fetchedAt, sourceUrl } = useBloomData();
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [advisoriesOnly, setAdvisoriesOnly] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
@@ -70,6 +71,7 @@ const AlgaeBloomMap: React.FC = () => {
   const chooseBloom = (bloom: BloomData, index: number) => {
     setSelectedId(recordId(bloom, index));
     setQuery(bloom.Water_Body_Name);
+    setIsSearchOpen(false);
   };
 
   const locateUser = () => {
@@ -116,13 +118,14 @@ const AlgaeBloomMap: React.FC = () => {
             <input
               id="waterway-search"
               value={query}
-              onChange={(event) => { setQuery(event.target.value); setSelectedId(null); }}
+              onChange={(event) => { setQuery(event.target.value); setSelectedId(null); setIsSearchOpen(true); }}
+              onFocus={() => setIsSearchOpen(true)}
               placeholder="Search river, lake, beach, or county"
               autoComplete="off"
               aria-controls="waterway-results"
               aria-expanded={Boolean(query.trim() && searchResults.length)}
             />
-            {query.trim() && searchResults.length > 0 && (
+            {isSearchOpen && query.trim() && searchResults.length > 0 && (
               <div id="waterway-results" className="search-results" role="listbox">
                 {searchResults.map((bloom, index) => (
                   <button key={recordId(bloom, index)} type="button" role="option" onClick={() => chooseBloom(bloom, index)}>
@@ -156,6 +159,16 @@ const AlgaeBloomMap: React.FC = () => {
         <span className="summary-source">Updated {formatTimestamp(fetchedAt)}</span>
       </div>
       {locationMessage && <p className="location-message" role="status">{locationMessage}</p>}
+      {selectedBloom && (
+        <section className="selected-report" aria-live="polite">
+          <div>
+            <span className={`selected-status selected-status--${getAdvisoryStatus(selectedBloom).kind}`}>{getAdvisoryStatus(selectedBloom).label}</span>
+            <strong>{selectedBloom.Water_Body_Name}</strong>
+            <span>{selectedBloom.Landmark || selectedBloom.County || 'Location details not reported'}</span>
+          </div>
+          {selectedBloom.Reported_Management_Organizations && <p><strong>Monitoring note:</strong> {selectedBloom.Reported_Management_Organizations}</p>}
+        </section>
+      )}
       <div className="map-wrapper">
         <MapContainer center={[37.5, -119.5]} zoom={6} className="map-container" zoomControl={false}>
           <MapLayers />
