@@ -303,7 +303,7 @@ const AlgaeBloomMap: React.FC = () => {
         <span className="summary-source">Updated {formatTimestamp(fetchedAt)}</span>
       </div>
       <details className="mobile-safety-strip">
-        <summary><strong>Dog safety</strong><span>Map reports are not a clearance.</span><em>More</em></summary>
+        <summary><strong>Before your dog goes in:</strong><span>no advisory doesn’t mean the water is safe.</span><em>More</em></summary>
         <div>
           <p>Check posted signs and the water itself. Keep dogs out around scum, mats, foam, paint-like color, or a reported spike.</p>
           <a href={OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">California official HAB map</a>
@@ -459,13 +459,13 @@ const AlgaeBloomMap: React.FC = () => {
         )}
         <nav className="mobile-bottom-toolbar" aria-label="Map actions">
           <button type="button" onClick={toggleMobileSearch} aria-expanded={isSearchOpen} aria-controls="mobile-waterway-search">
-            <span aria-hidden="true">⌕</span><small>Search</small>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5" /><path d="m15 15 4.5 4.5" /></svg><small>Search</small>
           </button>
           <button type="button" onClick={toggleMobileReports} aria-expanded={isListOpen} aria-controls="reports-in-view">
-            <span aria-hidden="true">☷</span><small>Reports</small>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 6h11M7 12h11M7 18h11" /><circle cx="4" cy="6" r=".8" /><circle cx="4" cy="12" r=".8" /><circle cx="4" cy="18" r=".8" /></svg><small>Signals <b>{visibleSignalCount}</b></small>
           </button>
           <button type="button" onClick={toggleMobileTools} aria-expanded={showTools}>
-            <span aria-hidden="true">⚙</span><small>Tools</small>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" /><circle cx="12" cy="12" r="3.2" /></svg><small>Tools</small>
           </button>
         </nav>
       </div>

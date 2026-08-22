@@ -243,8 +243,8 @@
   .assessment-sheet { right: 10px; bottom: 71px; left: 10px; max-width: none; padding: 10px 38px 10px 11px; border-radius: 12px; font-size: 0.76rem; }
   .dog-safety-note { margin: 8px 0 6px; padding: 6px 7px; }
   .assessment-sheet a { margin-top: 7px; }
-  .in-view-toggle { top: 10px; left: 10px; }
-  .reports-drawer { top: 53px; right: 10px; bottom: 64px; left: 10px; width: auto; max-height: calc(100% - 117px); }
+  .in-view-toggle { display: none; }
+  .reports-drawer { top: 10px; right: 10px; bottom: 64px; left: 10px; width: auto; max-height: calc(100% - 74px); }
   .mobile-search-panel, .mobile-tools-panel { position: absolute; z-index: 1400; right: 10px; bottom: 63px; left: 10px; display: block; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 10px 24px rgba(16, 42, 53, 0.24); }
   .mobile-search-panel input { width: 100%; min-height: 42px; padding: 0 11px; border: 1px solid #a5c4c1; border-radius: 9px; background: #fff; color: var(--ink); font: inherit; }
   .mobile-search-panel .search-results { position: static; margin-top: 8px; border: 1px solid #dce8e6; box-shadow: none; }
@@ -254,11 +254,12 @@
   .mobile-tools-panel .toggle-control, .mobile-tools-panel .locate-button, .mobile-tools-panel .clear-view-button { grid-column: 1 / -1; }
   .mobile-tools-panel .locate-button { width: 100%; }
   .mobile-tools-panel .clear-view-button { display: block; padding: 0; border: 0; background: transparent; color: var(--water-dark); font: inherit; font-size: 0.74rem; font-weight: 750; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-  .mobile-bottom-toolbar { position: absolute; z-index: 1300; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(3, 1fr); min-height: 57px; padding: 5px 8px max(5px, env(safe-area-inset-bottom)); border-top: 1px solid #b9d4d0; background: rgba(247, 251, 250, 0.98); box-shadow: 0 -5px 16px rgba(16, 42, 53, 0.14); }
-  .mobile-bottom-toolbar button { display: grid; place-items: center; gap: 1px; border: 0; border-radius: 9px; background: transparent; color: var(--water-dark); font: inherit; font-weight: 750; cursor: pointer; }
-  .mobile-bottom-toolbar button[aria-expanded='true'] { background: #dcefeb; }
-  .mobile-bottom-toolbar span { font-size: 1.18rem; line-height: 1; }
-  .mobile-bottom-toolbar small { font-size: 0.66rem; }
+  .mobile-bottom-toolbar { position: absolute; z-index: 1300; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(3, 1fr); min-height: 59px; gap: 6px; padding: 6px 10px max(6px, env(safe-area-inset-bottom)); border-top: 1px solid #b9d4d0; background: rgba(247, 251, 250, 0.98); box-shadow: 0 -5px 16px rgba(16, 42, 53, 0.14); }
+  .mobile-bottom-toolbar button { display: grid; place-items: center; gap: 2px; border: 1px solid transparent; border-radius: 10px; background: #eef7f5; color: var(--water-dark); font: inherit; font-weight: 750; cursor: pointer; }
+  .mobile-bottom-toolbar button[aria-expanded='true'] { border-color: #8bbdb6; background: #d7ece8; }
+  .mobile-bottom-toolbar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .mobile-bottom-toolbar small { font-size: 0.66rem; line-height: 1; }
+  .mobile-bottom-toolbar b { display: inline-grid; min-width: 16px; height: 16px; place-items: center; margin-left: 3px; border-radius: 99px; background: var(--water-dark); color: #fff; font-size: 0.58rem; vertical-align: middle; }
   .leaflet-bottom.leaflet-right { bottom: 62px; }
 }
 
