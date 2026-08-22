@@ -289,6 +289,14 @@ const AlgaeBloomMap: React.FC = () => {
         <strong>{advisoryCount}</strong> with an advisory or alert
         <span className="summary-source">Updated {formatTimestamp(fetchedAt)}</span>
       </div>
+      <details className="mobile-safety-strip">
+        <summary><strong>Dog safety</strong><span>Map reports are not a clearance.</span><em>More</em></summary>
+        <div>
+          <p>Check posted signs and the water itself. Keep dogs out around scum, mats, foam, paint-like color, or a reported spike.</p>
+          <a href={OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">California official HAB map</a>
+          <a href="https://wxvisual.com/HoopaValley/index.php" target="_blank" rel="noopener noreferrer">Hoopa live monitoring</a>
+        </div>
+      </details>
       <div className="map-wrapper">
         <MapContainer center={[initialMapView.latitude, initialMapView.longitude]} zoom={initialMapView.zoom} className="map-container" zoomControl={false}>
           <MapLayers />
