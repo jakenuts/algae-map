@@ -5,6 +5,7 @@ import { getAdvisoryStatus, getCustomIcon } from '../../utils/markerUtils';
 
 interface BloomMarkerProps {
   bloom: BloomData;
+  onSelect?: (bloom: BloomData) => void;
 }
 
 const formatDate = (date?: string | null) => {
@@ -13,7 +14,7 @@ const formatDate = (date?: string | null) => {
   return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
+export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom, onSelect }) => {
   if (!bloom.Bloom_Latitude || !bloom.Bloom_Longitude) return null;
 
   const position: [number, number] = [Number(bloom.Bloom_Latitude), Number(bloom.Bloom_Longitude)];
@@ -23,7 +24,7 @@ export const BloomMarker: React.FC<BloomMarkerProps> = ({ bloom }) => {
   const icon = getCustomIcon(advisory.kind);
 
   return (
-    <Marker position={position} icon={icon}>
+    <Marker position={position} icon={icon} eventHandlers={{ click: () => onSelect?.(bloom) }}>
       <Tooltip direction="top" offset={[0, -14]} opacity={1}>
         <span>{bloom.Water_Body_Name} — {advisory.label}</span>
       </Tooltip>

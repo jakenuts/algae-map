@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BloomData, fetchBloomData } from '../../api/bloomService';
+import { BloomData, fetchBloomData, fetchHoopaMonitoring, LocalMonitoringStation } from '../../api/bloomService';
 
 export type DateFilterOption = 14 | 30 | 60 | 90;
 
@@ -36,14 +36,19 @@ export const useBloomData = () => {
   const [updatedDays, setUpdatedDays] = useState<DateFilterOption>(30);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
+  const [localMonitoring, setLocalMonitoring] = useState<LocalMonitoringStation[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchBloomData();
+        const [data, monitoring] = await Promise.all([
+          fetchBloomData(),
+          fetchHoopaMonitoring().catch(() => null),
+        ]);
         setBloomData(data.records);
         setFetchedAt(data.fetchedAt);
         setSourceUrl(data.sourceUrl || null);
+        setLocalMonitoring(monitoring?.stations ?? []);
         setIsLoading(false);
       } catch (err) {
         setError('Error fetching bloom data');
@@ -70,5 +75,6 @@ export const useBloomData = () => {
     setUpdatedDays,
     fetchedAt,
     sourceUrl,
+    localMonitoring,
   };
 };

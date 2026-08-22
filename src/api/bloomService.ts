@@ -26,6 +26,24 @@ export interface BloomDataResponse {
   sourceUrl: string;
 }
 
+export interface LocalMonitoringStation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  value: number;
+  unit: string;
+  observedAt: string | null;
+  sourceUrl: string;
+}
+
+export interface LocalMonitoringResponse {
+  stations: LocalMonitoringStation[];
+  fetchedAt: string;
+  source: string;
+  sourceUrl: string;
+}
+
 const processBloomData = (csvData: string): Promise<BloomData[]> => {
   return new Promise<BloomData[]>((resolve, reject) => {
     Papa.parse<BloomData>(csvData, {
@@ -55,4 +73,11 @@ export const fetchBloomData = async (): Promise<BloomDataResponse> => {
   if (!response.ok) throw new Error('Unable to load current California HAB reports');
 
   return response.json() as Promise<BloomDataResponse>;
+};
+
+export const fetchHoopaMonitoring = async (): Promise<LocalMonitoringResponse> => {
+  const response = await fetch('/api/hoopa-monitoring', { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error('Unable to load Hoopa live monitoring');
+
+  return response.json() as Promise<LocalMonitoringResponse>;
 };
