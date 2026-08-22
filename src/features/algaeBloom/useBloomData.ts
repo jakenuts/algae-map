@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchBloomData, BloomData } from '../../api/bloomService';
+import { BloomData, fetchBloomData } from '../../api/bloomService';
 
 export type DateFilterOption = 14 | 30 | 60 | 90;
 
@@ -8,18 +8,12 @@ const isValidDate = (dateStr: string): boolean => {
   return date instanceof Date && !isNaN(date.getTime());
 };
 
-const getMostRecentDate = (item: BloomData): Date | null => {
-  const advisoryDate = new Date(item.Advisory_Date);
-  const observationDate = new Date(item.Observation_Date);
-  
-  const validAdvisory = isValidDate(item.Advisory_Date);
-  const validObservation = isValidDate(item.Observation_Date);
+export const getMostRecentDate = (item: BloomData): Date | null => {
+  const dates = [item.Bloom_Date_Created, item.Advisory_Date, item.Observation_Date]
+    .filter((date): date is string => Boolean(date && isValidDate(date)))
+    .map((date) => new Date(date));
 
-  if (!validAdvisory && !validObservation) return null;
-  if (!validAdvisory) return observationDate;
-  if (!validObservation) return advisoryDate;
-  
-  return advisoryDate > observationDate ? advisoryDate : observationDate;
+  return dates.length ? new Date(Math.max(...dates.map((date) => date.getTime()))) : null;
 };
 
 const filterDataByDays = (data: BloomData[], days: DateFilterOption): BloomData[] => {
@@ -27,11 +21,10 @@ const filterDataByDays = (data: BloomData[], days: DateFilterOption): BloomData[
   
   return data.filter(item => {
     const mostRecentDate = getMostRecentDate(item);
-    if (!mostRecentDate) return true; // Include items with no valid dates
-    
-    const timeDiff = Math.abs(today.getTime() - mostRecentDate.getTime());
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    return daysDiff <= days;
+    if (!mostRecentDate) return false;
+
+    const daysSince = (today.getTime() - mostRecentDate.getTime()) / (1000 * 3600 * 24);
+    return daysSince >= -1 && daysSince <= days;
   });
 };
 
@@ -41,12 +34,16 @@ export const useBloomData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatedDays, setUpdatedDays] = useState<DateFilterOption>(30);
+  const [fetchedAt, setFetchedAt] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchBloomData();
-        setBloomData(data);
+        setBloomData(data.records);
+        setFetchedAt(data.fetchedAt);
+        setSourceUrl(data.sourceUrl || null);
         setIsLoading(false);
       } catch (err) {
         setError('Error fetching bloom data');
@@ -70,6 +67,8 @@ export const useBloomData = () => {
     isLoading,
     error,
     updatedDays,
-    setUpdatedDays
+    setUpdatedDays,
+    fetchedAt,
+    sourceUrl,
   };
 };

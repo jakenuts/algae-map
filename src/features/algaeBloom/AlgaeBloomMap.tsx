@@ -1,111 +1,181 @@
-import React, { useState } from 'react';
-import { MapContainer } from 'react-leaflet';
+import React, { useEffect, useMemo, useState } from 'react';
+import { CircleMarker, MapContainer, ZoomControl, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useBloomData, DateFilterOption } from './useBloomData';
 import { BloomMarker } from './BloomMarker';
 import MapLayers from './MapLayers';
 import { PulseLoader } from 'react-spinners';
-import { FormControl, Select, MenuItem, IconButton, Tooltip } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import warningIcon from '../../assets/warning-marker.svg';
+import { BloomData } from '../../api/bloomService';
+import { getAdvisoryStatus } from '../../utils/markerUtils';
 import './AlgaeBloomMap.css';
 
-const LegalDisclaimer: React.FC = () => (
-  <div className="legal-disclaimer">
-    This map is for informational purposes only. For the most up-to-date and official information, please visit the{' '}
-    <a href="https://www.mywaterquality.ca.gov/habs/where/freshwater_events.html" target="_blank" rel="noopener noreferrer">
-      California Harmful Algal Blooms Portal
-    </a>
-    .
-  </div>
-);
+const OFFICIAL_MAP_URL = 'https://www.mywaterquality.ca.gov/habs/resources/reports-map/';
+const recordId = (bloom: BloomData, index: number) => String(bloom.Bloom_Report_ID ?? `${bloom.Water_Body_Name}-${bloom.Bloom_Latitude}-${bloom.Bloom_Longitude}-${index}`);
 
-const DateFilter: React.FC<{
-  value: DateFilterOption;
-  onChange: (value: DateFilterOption) => void;
-  label: string;
-}> = ({ value, onChange, label }) => (
-  <FormControl size="small" className="date-filter">
-    <Select
-      value={value}
-      onChange={(e) => onChange(e.target.value as DateFilterOption)}
-      displayEmpty
-      className="date-select"
-    >
-      <MenuItem value={14}>{label} 14d</MenuItem>
-      <MenuItem value={30}>{label} 30d </MenuItem>
-      <MenuItem value={60}>{label} 60d</MenuItem>
-      <MenuItem value={90}>{label} 90d</MenuItem>
-    </Select>
-  </FormControl>
-);
+const formatTimestamp = (value: string | null) => {
+  if (!value) return 'Refreshing now';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Recently refreshed' : date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+};
+
+const ViewportController: React.FC<{ selectedBloom: BloomData | null; userLocation: [number, number] | null }> = ({ selectedBloom, userLocation }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!selectedBloom) return;
+    const latitude = Number(selectedBloom.Bloom_Latitude);
+    const longitude = Number(selectedBloom.Bloom_Longitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) map.flyTo([latitude, longitude], 12, { duration: 0.7 });
+  }, [map, selectedBloom]);
+
+  useEffect(() => {
+    if (userLocation) map.flyTo(userLocation, 11, { duration: 0.7 });
+  }, [map, userLocation]);
+
+  return null;
+};
 
 const LoadingScreen: React.FC = () => (
   <div className="loading-container">
-    <PulseLoader color="#2c3e50" size={15} margin={2} />
-    <div className="loading-text">Loading Algae Bloom Data...</div>
+    <PulseLoader color="#0e5a63" size={12} margin={3} />
+    <div className="loading-text">Loading current California HAB reports…</div>
   </div>
 );
 
-const Header: React.FC<{
-  updatedDays: DateFilterOption;
-  setUpdatedDays: (days: DateFilterOption) => void;
-}> = ({ updatedDays, setUpdatedDays }) => {
-  const [showFilters, setShowFilters] = useState(false);
-
-  return (
-    <header className="app-header">
-      <div className="header-left">
-        <img src={warningIcon} alt="" className="app-logo" />
-        <h1>NorCal Algae Bloom Map</h1>
-      </div>
-      <div className={`filters-container ${showFilters ? 'show' : ''}`}>
-        <DateFilter
-          value={updatedDays}
-          onChange={setUpdatedDays}
-          label="Updated"
-        />
-      </div>
-      <Tooltip title="Toggle Filters" placement="left">
-        <IconButton 
-          className="filter-toggle"
-          onClick={() => setShowFilters(!showFilters)}
-          aria-label="toggle filters"
-        >
-          <FilterListIcon />
-        </IconButton>
-      </Tooltip>
-    </header>
-  );
-};
-
 const AlgaeBloomMap: React.FC = () => {
-  const {
-    bloomData,
-    isLoading,
-    error,
-    updatedDays,
-    setUpdatedDays
-  } = useBloomData();
+  const { bloomData, isLoading, error, updatedDays, setUpdatedDays, fetchedAt, sourceUrl } = useBloomData();
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [advisoriesOnly, setAdvisoriesOnly] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [locationMessage, setLocationMessage] = useState<string | null>(null);
+
+  const matchingBloomData = useMemo(() => {
+    const search = query.trim().toLowerCase();
+    return bloomData.filter((bloom) => {
+      const matchesSearch = !search || [bloom.Water_Body_Name, bloom.Landmark, bloom.County]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(search));
+      return matchesSearch && (!advisoriesOnly || getAdvisoryStatus(bloom).isAdvisory);
+    });
+  }, [advisoriesOnly, bloomData, query]);
+
+  const searchResults = useMemo(() => matchingBloomData.slice(0, 6), [matchingBloomData]);
+  const selectedBloom = useMemo(
+    () => matchingBloomData.find((bloom, index) => recordId(bloom, index) === selectedId) ?? null,
+    [matchingBloomData, selectedId],
+  );
+  const advisoryCount = matchingBloomData.filter((bloom) => getAdvisoryStatus(bloom).isAdvisory).length;
+
+  const chooseBloom = (bloom: BloomData, index: number) => {
+    setSelectedId(recordId(bloom, index));
+    setQuery(bloom.Water_Body_Name);
+  };
+
+  const locateUser = () => {
+    if (!navigator.geolocation) {
+      setLocationMessage('Location is not available in this browser. Search by waterway or county instead.');
+      return;
+    }
+
+    setLocationMessage('Finding your location…');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation([position.coords.latitude, position.coords.longitude]);
+        setLocationMessage('Map centered on your location.');
+      },
+      () => setLocationMessage('Location permission was not granted. Search by waterway or county instead.'),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
+  };
 
   if (isLoading) return <LoadingScreen />;
-  if (error) return <div>Error: {error}</div>;
+  if (error) {
+    return (
+      <main className="error-screen">
+        <h1>Current HAB reports are unavailable</h1>
+        <p>{error}. Please try again shortly or use the official California map.</p>
+        <a href={OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">Open the official HAB Reports Map</a>
+      </main>
+    );
+  }
 
   return (
     <div className="algae-bloom-map">
-      <Header
-        updatedDays={updatedDays}
-        setUpdatedDays={setUpdatedDays}
-      />
+      <header className="app-header">
+        <div className="brand">
+          <div className="brand-mark" aria-hidden="true"><span /></div>
+          <div>
+            <h1>California Water Watch</h1>
+            <p>Recent harmful algae bloom reports</p>
+          </div>
+        </div>
+        <div className="map-controls" aria-label="Map controls">
+          <div className="search-control">
+            <label className="sr-only" htmlFor="waterway-search">Search waterways, landmarks, or counties</label>
+            <input
+              id="waterway-search"
+              value={query}
+              onChange={(event) => { setQuery(event.target.value); setSelectedId(null); }}
+              placeholder="Search river, lake, beach, or county"
+              autoComplete="off"
+              aria-controls="waterway-results"
+              aria-expanded={Boolean(query.trim() && searchResults.length)}
+            />
+            {query.trim() && searchResults.length > 0 && (
+              <div id="waterway-results" className="search-results" role="listbox">
+                {searchResults.map((bloom, index) => (
+                  <button key={recordId(bloom, index)} type="button" role="option" onClick={() => chooseBloom(bloom, index)}>
+                    <span>{bloom.Water_Body_Name}</span>
+                    <small>{bloom.County || 'County not reported'} · {getAdvisoryStatus(bloom).label}</small>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <label className="compact-control" htmlFor="date-filter">
+            <span>Window</span>
+            <select id="date-filter" value={updatedDays} onChange={(event) => setUpdatedDays(Number(event.target.value) as DateFilterOption)}>
+              <option value={14}>14 days</option>
+              <option value={30}>30 days</option>
+              <option value={60}>60 days</option>
+              <option value={90}>90 days</option>
+            </select>
+          </label>
+          <label className="toggle-control">
+            <input type="checkbox" checked={advisoriesOnly} onChange={(event) => setAdvisoriesOnly(event.target.checked)} />
+            <span>Advisories only</span>
+          </label>
+          <button type="button" className="locate-button" onClick={locateUser}>Locate me</button>
+        </div>
+      </header>
+      <div className="map-summary" aria-live="polite">
+        <strong>{matchingBloomData.length}</strong> recent reports
+        <span aria-hidden="true">·</span>
+        <strong>{advisoryCount}</strong> with an advisory or alert
+        <span className="summary-source">Updated {formatTimestamp(fetchedAt)}</span>
+      </div>
+      {locationMessage && <p className="location-message" role="status">{locationMessage}</p>}
       <div className="map-wrapper">
-        <MapContainer center={[37.5, -119.5]} zoom={6} className="map-container">
+        <MapContainer center={[37.5, -119.5]} zoom={6} className="map-container" zoomControl={false}>
           <MapLayers />
-          {bloomData.map((bloom, index) => (
-            <BloomMarker key={index} bloom={bloom} />
-          ))}
+          <ZoomControl position="bottomright" />
+          <ViewportController selectedBloom={selectedBloom} userLocation={userLocation} />
+          {userLocation && <CircleMarker center={userLocation} radius={8} pathOptions={{ color: '#083e50', fillColor: '#38bdf8', fillOpacity: 1, weight: 3 }} />}
+          {matchingBloomData.map((bloom, index) => <BloomMarker key={recordId(bloom, index)} bloom={bloom} />)}
         </MapContainer>
       </div>
-      <LegalDisclaimer />
+      <aside className="safety-panel">
+        <div className="legend" aria-label="Advisory marker legend">
+          <span><i className="legend-dot legend-dot--danger" />Danger</span>
+          <span><i className="legend-dot legend-dot--warning" />Warning / caution</span>
+          <span><i className="legend-dot legend-dot--alert" />Alert / awareness</span>
+          <span><i className="legend-dot legend-dot--reported" />Report, no advisory recorded</span>
+        </div>
+        <p><strong>Before your dog goes in:</strong> no advisory recorded does not mean the water is safe. Check for posted signs, scum, mats, or discolored water and keep pets out if you see them.</p>
+        <a href={sourceUrl || OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">California Water Boards data</a>
+        <a href={OFFICIAL_MAP_URL} target="_blank" rel="noopener noreferrer">Official HAB map</a>
+      </aside>
     </div>
   );
 };

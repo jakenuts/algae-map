@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #f7fbfa;
+  color: #102a35;
 }
 
 code {
@@ -20,4 +22,9 @@ html, body, #root {
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background: #a7e7de;
+  color: #083e50;
 }

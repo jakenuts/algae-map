@@ -1,140 +1,34 @@
 import L from 'leaflet';
 
-import dangerMarker from '../assets/danger-marker.svg';
-import noneMarker from '../assets/none-marker.svg';
-import otherMarker from '../assets/other-marker.svg';
-import warningMarker from '../assets/warning-marker.svg';
 import { BloomData } from '../api/bloomService';
 
-// Severity score ranges
-const SEVERITY_RANGES = {
-  CRITICAL: { min: 8, max: 10 },
-  HIGH: { min: 6, max: 7 },
-  MEDIUM: { min: 3, max: 5 },
-  LOW: { min: 1, max: 2 },
-  SAFE: { min: 0, max: 0 }
-} as const;
+export type AdvisoryKind = 'danger' | 'warning' | 'caution' | 'alert' | 'awareness' | 'reported';
 
-// Convert numeric score to severity level
-const scoreToSeverity = (score: number): string => {
-  if (score >= SEVERITY_RANGES.CRITICAL.min) return 'critical';
-  if (score >= SEVERITY_RANGES.HIGH.min) return 'high';
-  if (score >= SEVERITY_RANGES.MEDIUM.min) return 'medium';
-  if (score >= SEVERITY_RANGES.LOW.min) return 'low';
-  return 'safe';
-};
-
-export const getCustomIcon = (advisoryType: string, severity: string, iconSize: number): L.Icon => {
-  let iconUrl = otherMarker;
-
-  if (advisoryType) {
-    const lowerAdvisoryType = advisoryType.toLowerCase();
-    if (lowerAdvisoryType.includes('danger')) {
-      iconUrl = dangerMarker;
-    } else if (lowerAdvisoryType.includes('caution') || lowerAdvisoryType.includes('warning')) {
-      iconUrl = warningMarker;
-    } else if (lowerAdvisoryType.includes('none')) {
-      iconUrl = noneMarker;
-    }
-  } else {
-    // Use severity to determine icon if advisory type is not reported
-    switch (severity) {
-      case 'critical':
-      case 'high':
-        iconUrl = dangerMarker;
-        break;
-      case 'medium':
-        iconUrl = warningMarker;
-        break;
-      case 'low':
-      case 'safe':
-        iconUrl = noneMarker;
-        break;
-    }
-  }
-
-  return L.icon({
-    iconUrl,
-    iconSize: [iconSize, iconSize],
-    iconAnchor: [iconSize / 2, iconSize],
-    popupAnchor: [0, -iconSize]
-  });
-};
-
-const getBaseScore = (recommendedText: string): number | null => {
-  const lowerRecommended = recommendedText.toLowerCase();
-
-  // Direct severity mappings that skip other checks
-  if (lowerRecommended.includes('none') || lowerRecommended.includes('safe')) {
-    return 0; // Safe
-  }
-  if (lowerRecommended.includes('danger')) {
-    return 10; // Critical
-  }
-
-  // Initial severity mappings that can be modified
-  if (lowerRecommended.includes('na')) {
-    return 1; // Low
-  }
-  if (lowerRecommended.includes('general awareness')) {
-    return 1; // Low
-  }
-  if (lowerRecommended.includes('alert sign')) {
-    return 4; // Medium + 1
-  }
-  if (lowerRecommended.includes('warning')) {
-    return 5; // Medium + 2
-  }
-  if (lowerRecommended.includes('caution')) {
-    return 4; // Medium + 1
-  }
-  if (lowerRecommended.includes('visual')) {
-    return 3; // Medium
-  }
-
-  return 1; // Default to low if no match
-};
-
-const calculateSeverityScore = (bloom: BloomData): number => {
-  // Check for direct severity mappings first
-  if (bloom.Advisory_Recommended) {
-    const baseScore = getBaseScore(bloom.Advisory_Recommended);
-    if (baseScore === 0 || baseScore === 10) {
-      return baseScore; // Return immediately for safe or critical
-    }
-  }
-
-  // Start with base score or default to low
-  let score = bloom.Advisory_Recommended ? 
-    getBaseScore(bloom.Advisory_Recommended) ?? 1 : 1;
-
-  const lowerAdvisoryDetail = (bloom.AdvisoryDetail || '').toLowerCase();
-  const lowerAdvisoryDescription = (bloom.Advisory_Detail_Description || '').toLowerCase();
-  const combinedText = `${lowerAdvisoryDetail} ${lowerAdvisoryDescription}`;
-
-  // Severity increasing factors
-  if (combinedText.includes('illness')) score += 2;
-  if (combinedText.includes('toxic')) score += 2;
-  if (combinedText.includes('detected cyanotoxins')) score += 3;
-
-  // Severity decreasing factors
-  if (combinedText.includes('no harmful')) score -= 2;
-  if (combinedText.includes('no cyano')) score -= 2;
-  if (combinedText.includes('below posting triggers')) score -= 1;
-
-  // Ensure score stays within bounds
-  return Math.min(Math.max(score, 0), 10);
-};
-
-export interface SeverityResult {
-  severity: string;
-  score: number;
+export interface AdvisoryStatus {
+  kind: AdvisoryKind;
+  label: string;
+  isAdvisory: boolean;
 }
 
-export const determineSeverity = (bloom: BloomData): SeverityResult => {
-  const score = calculateSeverityScore(bloom);
-  return {
-    severity: scoreToSeverity(score),
-    score: score
-  };
+export const getAdvisoryStatus = (bloom: BloomData): AdvisoryStatus => {
+  const detail = [bloom.Advisory_Recommended, bloom.Reported_Advisory_Types]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (detail.includes('danger')) return { kind: 'danger', label: 'Danger advisory', isAdvisory: true };
+  if (detail.includes('warning')) return { kind: 'warning', label: 'Warning advisory', isAdvisory: true };
+  if (detail.includes('caution')) return { kind: 'caution', label: 'Caution advisory', isAdvisory: true };
+  if (detail.includes('alert')) return { kind: 'alert', label: 'Algal mat alert', isAdvisory: true };
+  if (detail.includes('general awareness')) return { kind: 'awareness', label: 'General awareness', isAdvisory: true };
+
+  return { kind: 'reported', label: 'No advisory recorded', isAdvisory: false };
 };
+
+export const getCustomIcon = (kind: AdvisoryKind): L.DivIcon => L.divIcon({
+  className: 'advisory-marker-shell',
+  html: `<span class="advisory-marker advisory-marker--${kind}" aria-hidden="true"></span>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -14],
+});
