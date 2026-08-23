@@ -167,8 +167,8 @@
 .advisory-marker--warning, .advisory-marker--caution, .legend-dot--warning, .popup-status--warning, .popup-status--caution { background: #d77a05; }
 .advisory-marker--alert, .advisory-marker--awareness, .legend-dot--alert, .popup-status--alert, .popup-status--awareness { background: #6951a8; }
 .advisory-marker--reported, .legend-dot--reported, .popup-status--reported { background: #247389; }
-.advisory-marker--grouped { display: grid; width: 22px; height: 22px; margin: 0; place-items: center; }
-.advisory-marker--grouped b { display: grid; min-width: 16px; height: 16px; place-items: center; border-radius: 50%; background: #fff; color: var(--ink); font-family: system-ui, sans-serif; font-size: 0.62rem; font-weight: 800; line-height: 1; }
+.advisory-marker--grouped { display: grid; box-sizing: border-box; width: 24px; height: 24px; margin: 0; place-items: center; }
+.advisory-marker--grouped b { color: #fff; font-family: system-ui, sans-serif; font-size: 0.62rem; font-weight: 800; line-height: 1; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72); }
 .local-monitoring-marker-shell { background: transparent; border: 0; }
 .local-monitoring-dot { box-sizing: border-box; }
 .monitoring-spike-note { padding: 7px 8px; border: 1px solid #e7c184; border-radius: 6px; background: #fff4df; color: #70410a; font-size: 0.8rem; }
