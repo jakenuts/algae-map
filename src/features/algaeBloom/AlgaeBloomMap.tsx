@@ -7,7 +7,7 @@ import { BloomMarker } from './BloomMarker';
 import MapLayers from './MapLayers';
 import { PulseLoader } from 'react-spinners';
 import { BloomData, LocalMonitoringStation } from '../../api/bloomService';
-import { getAdvisoryStatus } from '../../utils/markerUtils';
+import { getAdvisoryStatus, getGroupedIcon, getMarkerZIndexOffset } from '../../utils/markerUtils';
 import './AlgaeBloomMap.css';
 
 const OFFICIAL_MAP_URL = 'https://www.mywaterquality.ca.gov/habs/resources/reports-map/';
@@ -15,6 +15,7 @@ const SAVED_MAP_VIEW_KEY = 'california-water-watch:last-map-view';
 const DEFAULT_MAP_VIEW = { latitude: 37.5, longitude: -119.5, zoom: 6 };
 type MapView = typeof DEFAULT_MAP_VIEW;
 type MapBounds = { north: number; south: number; east: number; west: number };
+type BloomCluster = { representative: BloomData; blooms: BloomData[] };
 const recordId = (bloom: BloomData) => String(
   bloom.Bloom_Report_ID
   ?? [bloom.Water_Body_Name, bloom.Landmark, bloom.Bloom_Latitude, bloom.Bloom_Longitude, bloom.Bloom_Date_Created].join('-'),
@@ -43,6 +44,91 @@ const liveMonitorIcon = (station: LocalMonitoringStation) => {
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
+};
+
+const bloomPosition = (bloom: BloomData): [number, number] | null => {
+  const latitude = Number(bloom.Bloom_Latitude);
+  const longitude = Number(bloom.Bloom_Longitude);
+  return Number.isFinite(latitude) && Number.isFinite(longitude) ? [latitude, longitude] : null;
+};
+
+const ClusteredBloomMarkers: React.FC<{ blooms: BloomData[]; onSelect: (bloom: BloomData) => void }> = ({ blooms, onSelect }) => {
+  const map = useMap();
+  const [clusters, setClusters] = useState<BloomCluster[]>([]);
+
+  useEffect(() => {
+    const buildClusters = () => {
+      const eligible = blooms
+        .map((bloom) => ({ bloom, position: bloomPosition(bloom) }))
+        .filter((item): item is { bloom: BloomData; position: [number, number] } => item.position !== null)
+        .sort((left, right) => getMarkerZIndexOffset(getAdvisoryStatus(right.bloom).kind) - getMarkerZIndexOffset(getAdvisoryStatus(left.bloom).kind));
+      const remaining = new Set(eligible.map((item) => item.bloom));
+      const nextClusters: BloomCluster[] = [];
+
+      while (remaining.size) {
+        const first = remaining.values().next().value as BloomData;
+        remaining.delete(first);
+        const group = [first];
+        const pending = [first];
+
+        while (pending.length) {
+          const source = pending.pop()!;
+          const sourcePosition = bloomPosition(source)!;
+          const sourcePoint = map.project(sourcePosition, map.getZoom());
+          for (const candidate of Array.from(remaining)) {
+            const candidatePosition = bloomPosition(candidate)!;
+            if (sourcePoint.distanceTo(map.project(candidatePosition, map.getZoom())) <= 24) {
+              remaining.delete(candidate);
+              group.push(candidate);
+              pending.push(candidate);
+            }
+          }
+        }
+
+        const sorted = group.sort((left, right) => getMarkerZIndexOffset(getAdvisoryStatus(right).kind) - getMarkerZIndexOffset(getAdvisoryStatus(left).kind));
+        nextClusters.push({ representative: sorted[0], blooms: sorted });
+      }
+
+      setClusters(nextClusters);
+    };
+
+    buildClusters();
+    map.on('zoomend', buildClusters);
+    return () => {
+      map.off('zoomend', buildClusters);
+    };
+  }, [blooms, map]);
+
+  return (
+    <>
+      {clusters.map(({ representative, blooms: groupedBlooms }) => {
+        const advisory = getAdvisoryStatus(representative);
+        const position = bloomPosition(representative)!;
+        if (groupedBlooms.length === 1) {
+          return <BloomMarker key={recordId(representative)} bloom={representative} onSelect={onSelect} zIndexOffset={getMarkerZIndexOffset(advisory.kind)} />;
+        }
+
+        return (
+          <Marker key={groupedBlooms.map(recordId).join('|')} position={position} icon={getGroupedIcon(advisory.kind, groupedBlooms.length)} zIndexOffset={getMarkerZIndexOffset(advisory.kind)}>
+            <Tooltip direction="top" offset={[0, -16]} opacity={1}>{groupedBlooms.length} overlapping reports — highest: {advisory.label}</Tooltip>
+            <Popup>
+              <article className="popup-container overlapping-reports-popup">
+                <p className={`popup-status popup-status--${advisory.kind}`}>{advisory.label} is the highest severity here</p>
+                <h2>{groupedBlooms.length} overlapping reports</h2>
+                <p>Choose a report to inspect it and zoom in.</p>
+                <div className="overlapping-reports-list">
+                  {groupedBlooms.map((bloom) => {
+                    const itemAdvisory = getAdvisoryStatus(bloom);
+                    return <button key={recordId(bloom)} type="button" onClick={() => onSelect(bloom)}><span className={`selected-status selected-status--${itemAdvisory.kind}`}>{itemAdvisory.label}</span><strong>{bloom.Water_Body_Name}</strong></button>;
+                  })}
+                </div>
+              </article>
+            </Popup>
+          </Marker>
+        );
+      })}
+    </>
+  );
 };
 
 const ViewportController: React.FC<{ selectedBloom: BloomData | null; userLocation: [number, number] | null; focusedLocation: [number, number] | null }> = ({ selectedBloom, userLocation, focusedLocation }) => {
@@ -317,12 +403,13 @@ const AlgaeBloomMap: React.FC = () => {
           <ViewportController selectedBloom={selectedBloom} userLocation={userLocation} focusedLocation={focusedLocation} />
           <MapViewTracker onBoundsChange={setVisibleBounds} />
           {userLocation && <CircleMarker center={userLocation} radius={8} pathOptions={{ color: '#083e50', fillColor: '#38bdf8', fillOpacity: 1, weight: 3 }} />}
-          {matchingBloomData.map((bloom) => <BloomMarker key={recordId(bloom)} bloom={bloom} onSelect={selectBloom} />)}
+          <ClusteredBloomMarkers blooms={matchingBloomData} onSelect={selectBloom} />
           {localMonitoring.filter((station) => station.isCurrent).map((station) => (
             <Marker
               key={station.id}
               position={[station.latitude, station.longitude]}
               icon={liveMonitorIcon(station)}
+              zIndexOffset={station.hasRecentSpike ? getMarkerZIndexOffset('warning') : getMarkerZIndexOffset('reported')}
             >
               <Tooltip direction="top" offset={[0, -18]} opacity={1}>Hoopa live monitor — {station.name}</Tooltip>
               <Popup>

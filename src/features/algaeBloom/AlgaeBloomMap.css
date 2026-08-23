@@ -167,6 +167,8 @@
 .advisory-marker--warning, .advisory-marker--caution, .legend-dot--warning, .popup-status--warning, .popup-status--caution { background: #d77a05; }
 .advisory-marker--alert, .advisory-marker--awareness, .legend-dot--alert, .popup-status--alert, .popup-status--awareness { background: #6951a8; }
 .advisory-marker--reported, .legend-dot--reported, .popup-status--reported { background: #247389; }
+.advisory-marker--grouped { display: grid; width: 22px; height: 22px; margin: 0; place-items: center; }
+.advisory-marker--grouped b { display: grid; min-width: 16px; height: 16px; place-items: center; border-radius: 50%; background: #fff; color: var(--ink); font-family: system-ui, sans-serif; font-size: 0.62rem; font-weight: 800; line-height: 1; }
 .local-monitoring-marker-shell { background: transparent; border: 0; }
 .local-monitoring-dot { box-sizing: border-box; }
 .monitoring-spike-note { padding: 7px 8px; border: 1px solid #e7c184; border-radius: 6px; background: #fff4df; color: #70410a; font-size: 0.8rem; }
@@ -200,6 +202,10 @@
 .live-monitoring-status { display: inline-block; margin: 0; padding: 3px 6px; border-radius: 99px; background: #036f82; color: #fff; font-size: 0.72rem; font-weight: 750; }
 .popup-safety-note { padding: 7px 8px; border: 1px solid #f0d19a; border-radius: 6px; background: #fff6db; color: #553b08; font-size: 0.8rem; }
 .popup-container a { color: var(--water-dark); font-weight: 750; text-underline-offset: 3px; }
+.overlapping-reports-list { display: grid; gap: 6px; margin-top: 10px; }
+.overlapping-reports-list button { display: grid; width: 100%; gap: 4px; padding: 8px; border: 1px solid #d5e5e3; border-radius: 8px; background: #fff; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.overlapping-reports-list button:hover, .overlapping-reports-list button:focus-visible { border-color: #78aaa4; background: #eef8f5; outline: none; }
+.overlapping-reports-list button strong { font-size: 0.82rem; }
 
 .loading-container {
   position: fixed;

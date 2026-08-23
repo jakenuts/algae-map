@@ -10,6 +10,17 @@ export interface AdvisoryStatus {
   isAdvisory: boolean;
 }
 
+const severityRank: Record<AdvisoryKind, number> = {
+  danger: 6,
+  warning: 5,
+  caution: 4,
+  alert: 3,
+  awareness: 2,
+  reported: 1,
+};
+
+export const getMarkerZIndexOffset = (kind: AdvisoryKind): number => severityRank[kind] * 10000;
+
 export const getAdvisoryStatus = (bloom: BloomData): AdvisoryStatus => {
   const detail = [bloom.Advisory_Recommended, bloom.Reported_Advisory_Types]
     .filter(Boolean)
@@ -31,4 +42,12 @@ export const getCustomIcon = (kind: AdvisoryKind): L.DivIcon => L.divIcon({
   iconSize: [24, 24],
   iconAnchor: [12, 12],
   popupAnchor: [0, -14],
+});
+
+export const getGroupedIcon = (kind: AdvisoryKind, count: number): L.DivIcon => L.divIcon({
+  className: 'advisory-marker-shell',
+  html: `<span class="advisory-marker advisory-marker--${kind} advisory-marker--grouped" aria-hidden="true"><b>${count}</b></span>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+  popupAnchor: [0, -16],
 });
