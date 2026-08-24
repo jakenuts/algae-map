@@ -13,7 +13,7 @@ const parseObservedAt = (value) => {
   return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), hour, Number(minute)));
 };
 
-const getRecentPeak = (graph) => {
+const getRecentRange = (graph) => {
   const readings = String(graph)
     .split('\n')
     .slice(1, 49)
@@ -22,7 +22,10 @@ const getRecentPeak = (graph) => {
     .filter((reading) => reading.timestamp && Number.isFinite(reading.value));
 
   if (!readings.length) return null;
-  return readings.reduce((peak, reading) => (reading.value > peak.value ? reading : peak));
+  return {
+    low: readings.reduce((lowest, reading) => (reading.value < lowest.value ? reading : lowest)),
+    peak: readings.reduce((highest, reading) => (reading.value > highest.value ? reading : highest)),
+  };
 };
 
 const enrichStation = async (station) => {
@@ -38,16 +41,25 @@ const enrichStation = async (station) => {
     const graphResponse = await fetch(graphUrl, { headers: { Accept: 'application/json' } });
     if (!graphResponse.ok) return { ...station, isCurrent };
 
-    const peak = getRecentPeak(await graphResponse.json());
+    const range = getRecentRange(await graphResponse.json());
+    const increaseFactor = range?.low.value && range.low.value > 0
+      ? range.peak.value / range.low.value
+      : null;
+    // Deliberately conservative app policy, not a public-health threshold:
+    // a two-fold 24-hour rise is a warning and a four-fold rise is red.
+    const signalLevel = increaseFactor && range && range.peak.value - range.low.value >= 0.1
+      ? increaseFactor >= 4 ? 'danger' : increaseFactor >= 2 ? 'warning' : null
+      : null;
     return {
       ...station,
       isCurrent,
-      recentPeak: peak?.value ?? null,
-      recentPeakAt: peak?.timestamp ?? null,
-      // This is deliberately a visibility flag, not a public-health threshold.
-      // A short-term two-fold rise is useful context for a river visitor, while
-      // a raw BGA reading cannot establish whether toxins are present.
-      hasRecentSpike: Boolean(peak && peak.value >= 0.5 && peak.value >= station.value * 2),
+      recentPeak: range?.peak.value ?? null,
+      recentPeakAt: range?.peak.timestamp ?? null,
+      recentLow: range?.low.value ?? null,
+      recentLowAt: range?.low.timestamp ?? null,
+      recentIncreaseFactor: increaseFactor,
+      signalLevel,
+      hasRecentSpike: Boolean(signalLevel),
     };
   } catch {
     return { ...station, isCurrent };

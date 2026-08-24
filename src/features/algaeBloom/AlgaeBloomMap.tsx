@@ -38,9 +38,11 @@ const loadSavedMapView = (): MapView => {
 };
 
 const liveMonitorIcon = (station: LocalMonitoringStation) => {
+  const signalKind = station.signalLevel ?? (station.hasRecentSpike ? 'warning' : 'reported');
+  const isPotentialIncrease = signalKind !== 'reported';
   return divIcon({
     className: 'local-monitoring-marker-shell',
-    html: `<span class="advisory-marker advisory-marker--${station.hasRecentSpike ? 'warning' : 'reported'} local-monitoring-dot" aria-label="${station.hasRecentSpike ? 'Recent blue-green algae spike' : 'Current Hoopa monitoring signal'}"></span>`,
+    html: `<span class="advisory-marker advisory-marker--${signalKind} local-monitoring-dot${isPotentialIncrease ? ' local-monitoring-dot--signal' : ''}" aria-label="${isPotentialIncrease ? 'Potential blue-green algae increase — not official advisory' : 'Current Hoopa monitoring signal'}">${isPotentialIncrease ? '<b>!</b>' : ''}</span>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
@@ -409,20 +411,22 @@ const AlgaeBloomMap: React.FC = () => {
               key={station.id}
               position={[station.latitude, station.longitude]}
               icon={liveMonitorIcon(station)}
-              zIndexOffset={station.hasRecentSpike ? getMarkerZIndexOffset('warning') : getMarkerZIndexOffset('reported')}
+              zIndexOffset={station.signalLevel ? getMarkerZIndexOffset('danger') + 10000 : getMarkerZIndexOffset('reported')}
             >
               <Tooltip direction="top" offset={[0, -18]} opacity={1}>Hoopa live monitor — {station.name}</Tooltip>
               <Popup>
                 <article className="popup-container">
-                  <p className="live-monitoring-status">Live local monitoring — not an advisory</p>
+                  <p className={station.signalLevel ? `potential-signal-status potential-signal-status--${station.signalLevel}` : 'live-monitoring-status'}>{station.signalLevel ? 'Potential BGA increase — not official advisory' : 'Live local monitoring — not an advisory'}</p>
                   <h2>{station.name}</h2>
                   <dl>
                     <dt>Latest reading</dt><dd>{station.value.toFixed(2)} {station.unit}</dd>
                     <dt>Station reading</dt><dd>{station.observedAt || 'Timestamp unavailable'}</dd>
                     {station.isCurrent && station.recentPeak != null && <><dt>Observed 24h high</dt><dd>{station.recentPeak.toFixed(2)} {station.unit}</dd></>}
                     {station.isCurrent && station.recentPeakAt && <><dt>High recorded</dt><dd>{station.recentPeakAt}</dd></>}
+                    {station.isCurrent && station.recentLow != null && <><dt>Observed 24h low</dt><dd>{station.recentLow.toFixed(2)} {station.unit}</dd></>}
+                    {station.isCurrent && station.recentIncreaseFactor != null && <><dt>24h increase</dt><dd>{station.recentIncreaseFactor.toFixed(1)}× from low to high</dd></>}
                   </dl>
-                  {station.hasRecentSpike && <p className="monitoring-spike-note"><strong>Recent BGA spike.</strong> This station's high in the last 24 hours was more than double the latest reading. Treat that as a reason to use extra caution and inspect the water—not as a toxin result.</p>}
+                  {station.signalLevel && <p className="monitoring-spike-note"><strong>Potential BGA increase.</strong> This map treats a ≥2× rise across the last 24 hours as a precautionary warning, and ≥4× as red. It is not a toxin result or official advisory, but should not be ignored when deciding whether a dog goes in.</p>}
                   <p className="popup-safety-note"><strong>Visible local signal, not a toxicity finding.</strong> This is a raw local instrument reading, not a toxin result or public-health advisory. Do not use it alone to decide whether it is safe for your dog.</p>
                   <a href={station.sourceUrl} target="_blank" rel="noopener noreferrer">View Hoopa live trend</a>
                 </article>
@@ -489,9 +493,9 @@ const AlgaeBloomMap: React.FC = () => {
               {visibleMonitoringSignals.map((station) => (
                 <details key={station.id} className="view-report-card view-report-card--monitoring">
                   <summary>
-                    <span className={`selected-status selected-status--${station.hasRecentSpike ? 'warning' : 'reported'}`}>{station.hasRecentSpike ? 'Recent BGA spike' : 'Live monitoring signal'}</span>
+                    <span className={`selected-status selected-status--${station.signalLevel ?? (station.hasRecentSpike ? 'warning' : 'reported')}`}>{station.hasRecentSpike ? 'Potential BGA increase' : 'Live monitoring signal'}</span>
                     <strong>{station.name}</strong>
-                    <small>Latest {station.value.toFixed(2)} {station.unit}{station.recentPeak != null ? ` · 24h high ${station.recentPeak.toFixed(2)}` : ''}</small>
+                    <small>Latest {station.value.toFixed(2)} {station.unit}{station.recentIncreaseFactor != null ? ` · ${station.recentIncreaseFactor.toFixed(1)}× 24h rise` : station.recentPeak != null ? ` · 24h high ${station.recentPeak.toFixed(2)}` : ''}</small>
                   </summary>
                   <div>
                     <p>Raw Hoopa Tribal EPA instrument signal, not a toxin result or official advisory.</p>
@@ -558,6 +562,7 @@ const AlgaeBloomMap: React.FC = () => {
       </div>
       <aside className="safety-panel">
         <div className="legend" aria-label="Advisory marker legend">
+          <span><i className="legend-dot legend-dot--potential" />Potential BGA rise, not official</span>
           <span><i className="legend-dot legend-dot--danger" />Danger</span>
           <span><i className="legend-dot legend-dot--warning" />Warning / caution</span>
           <span><i className="legend-dot legend-dot--alert" />Alert / awareness</span>

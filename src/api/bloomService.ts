@@ -37,6 +37,10 @@ export interface LocalMonitoringStation {
   isCurrent?: boolean;
   recentPeak?: number | null;
   recentPeakAt?: string | null;
+  recentLow?: number | null;
+  recentLowAt?: string | null;
+  recentIncreaseFactor?: number | null;
+  signalLevel?: 'warning' | 'danger' | null;
   hasRecentSpike?: boolean;
   sourceUrl: string;
 }
