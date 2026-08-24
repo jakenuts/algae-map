@@ -12,7 +12,7 @@ import './AlgaeBloomMap.css';
 
 const OFFICIAL_MAP_URL = 'https://www.mywaterquality.ca.gov/habs/resources/reports-map/';
 const SAVED_MAP_VIEW_KEY = 'california-water-watch:last-map-view';
-const DEFAULT_MAP_VIEW = { latitude: 37.5, longitude: -119.5, zoom: 6 };
+const DEFAULT_MAP_VIEW = { latitude: 37.5, longitude: -121, zoom: 6 };
 type MapView = typeof DEFAULT_MAP_VIEW;
 type MapBounds = { north: number; south: number; east: number; west: number };
 type BloomCluster = { representative: BloomData; blooms: BloomData[] };
@@ -43,8 +43,9 @@ const liveMonitorIcon = (station: LocalMonitoringStation) => {
   return divIcon({
     className: 'local-monitoring-marker-shell',
     html: `<span class="advisory-marker advisory-marker--${signalKind} local-monitoring-dot${isPotentialIncrease ? ' local-monitoring-dot--signal' : ''}" aria-label="${isPotentialIncrease ? 'Potential blue-green algae increase — not official advisory' : 'Current Hoopa monitoring signal'}">${isPotentialIncrease ? '<b>!</b>' : ''}</span>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [28, 28],
+    // Keep urgent west-edge signals fully inside the initial California view.
+    iconAnchor: isPotentialIncrease ? [2, 14] : [14, 14],
   });
 };
 
