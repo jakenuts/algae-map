@@ -1,6 +1,7 @@
 const HOOPA_MONITORING_URL = 'https://wxvisual.com/HoopaValley/controller/MapData/GetData.php';
 const HOOPA_PORTAL_URL = 'https://wxvisual.com/HoopaValley/index.php';
 const HOOPA_GRAPH_URL = 'https://wxvisual.com/HoopaValley/includes/gotograph.php';
+const RECENT_WINDOW_HOURS = 48;
 
 const stationName = (html) => html.match(/<label>([^<]+)<\/label>/i)?.[1]?.trim() ?? 'Hoopa Tribal EPA monitoring station';
 const observedAt = (html) => html.match(/<tr><td>([^<]+)<\/td>/i)?.[1]?.trim() ?? null;
@@ -16,7 +17,7 @@ const parseObservedAt = (value) => {
 const getRecentRange = (graph) => {
   const readings = String(graph)
     .split('\n')
-    .slice(1, 49)
+    .slice(1, RECENT_WINDOW_HOURS * 2 + 1)
     .map((line) => line.replace(/^"+/, '').split(','))
     .map(([timestamp, , , , , value]) => ({ timestamp: timestamp?.trim(), value: Number(value) }))
     .filter((reading) => reading.timestamp && Number.isFinite(reading.value));
@@ -46,7 +47,7 @@ const enrichStation = async (station) => {
       ? range.peak.value / range.low.value
       : null;
     // Deliberately conservative app policy, not a public-health threshold:
-    // a two-fold 24-hour rise is a warning and a four-fold rise is red.
+    // a two-fold 48-hour rise is a warning and a four-fold rise is red.
     const signalLevel = increaseFactor && range && range.peak.value - range.low.value >= 0.1
       ? increaseFactor >= 4 ? 'danger' : increaseFactor >= 2 ? 'warning' : null
       : null;
